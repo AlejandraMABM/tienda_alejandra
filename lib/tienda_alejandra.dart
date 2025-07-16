@@ -186,6 +186,16 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
     super.dispose();
   }
 
+  // para crear botón de cancelar y poder resetear los campos al pulsar boton cancelar al crear el producto
+  void _clearTextFields() {
+    _n.clear();
+    _p.clear();
+    _c.clear();
+    // como eliminaria la categoria seleccionada si es un string??
+    // Si usas un Form, puedes resetearlo también:
+    _formKey.currentState?.reset();
+  }
+
   Future<void> _save() async {
     // print('>>> _categoriaSeleccionada en _save(): $_categoriaSeleccionada');
     if (!_formKey.currentState!.validate()) return;
@@ -301,22 +311,46 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
     child: SizedBox(
       width: 220,   // más ancho
       height: 55,   // más alto (botón más grande)
-      child: ElevatedButton(
-        onPressed: _save,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue.shade800, // fondo oscuro azul (puedes cambiar)
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12), // bordes redondeados
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          
+
+
+          ElevatedButton(
+            onPressed: _save,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue.shade800, // fondo oscuro azul (puedes cambiar)
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12), // bordes redondeados
+              ),
+            ),
+            child: Text(
+              edit ? 'Guardar' : 'Crear',
+              style: const TextStyle(
+                fontSize: 20,             // texto más grande
+                fontWeight: FontWeight.bold,
+                color: Colors.white,      // texto blanco para buen contraste
+              ),
+            ),
           ),
-        ),
-        child: Text(
-          edit ? 'Guardar' : 'Crear',
-          style: const TextStyle(
-            fontSize: 20,             // texto más grande
-            fontWeight: FontWeight.bold,
-            color: Colors.white,      // texto blanco para buen contraste
-          ),
-        ),
+          ElevatedButton(
+            onPressed: _clearTextFields,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue.shade800, // fondo oscuro azul (puedes cambiar)
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12), // bordes redondeados
+              ),
+            ), child: Text('Cancelar',
+            style: const TextStyle(
+                fontSize: 20,             // texto más grande
+                fontWeight: FontWeight.bold,
+                color: Colors.white,      // texto blanco para buen contraste
+              ),
+            
+            ), ),
+
+        ],
       ),
     ),
   ),
