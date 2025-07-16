@@ -1,0 +1,53 @@
+import 'package:flutter/material.dart';
+
+class CategoriasRadio extends StatefulWidget {
+  const CategoriasRadio({super.key});
+
+  @override
+  State<CategoriasRadio> createState() => _CategoriasRadioState();
+}
+
+class _CategoriasRadioState extends State<CategoriasRadio> {
+  final List<String> categorias = [
+    'Informática',
+    'Electrodomésticos',
+    'Música',
+    'Mensaje hogar',
+    'Monedas',
+  ];
+
+  String? seleccionada;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Selecciona una categoría')),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (seleccionada != null)
+              Text(
+                'Seleccionada: $seleccionada',
+                style: const TextStyle(fontSize: 16),
+              ),
+            const SizedBox(height: 16),
+            ...categorias.map((opcion) {
+              return RadioListTile<String>(
+                title: Text(opcion),
+                value: opcion,
+                groupValue: seleccionada,
+                onChanged: (String? value) {
+                  setState(() {
+                    seleccionada = value;
+                  });
+                },
+              );
+            }).toList(),
+          ],
+        ),
+      ),
+    );
+  }
+}
