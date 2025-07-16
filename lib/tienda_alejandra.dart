@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tienda_alejandra/menu_principal.dart';
-// import 'package:tienda_alejandra/pages/categorias.dart';
 import 'models/producto.dart';
 import 'services/producto_service.dart';
 
@@ -62,20 +61,14 @@ class _ProductoListPageState extends State<ProductoListPage> {
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
         ),
-        //  content: Text('Eliminar "${p.nombre}"?'),
         content: Text.rich(
           TextSpan(
             text: 'Eliminar ',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.black,
-            ), // estilo base del texto
+            style: TextStyle(fontSize: 16, color: Colors.black),
             children: [
               TextSpan(
                 text: '"${p.nombre}"',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                ), // solo esto en negrita
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
               TextSpan(text: '?'),
             ],
@@ -84,7 +77,6 @@ class _ProductoListPageState extends State<ProductoListPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-
             child: const Text('No'),
           ),
           ElevatedButton(
@@ -148,24 +140,10 @@ class _ProductoListPageState extends State<ProductoListPage> {
               );
             },
           ),
-
     floatingActionButton: FloatingActionButton(
       onPressed: () => _openForm(),
-      child: const Icon(Icons.add), 
-      
-      
-    ), 
-
-    // prueba colocar el menu principal
-    /*floatingActionButton: FloatingActionButton(
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => MenuPrincipal()),
-        );
-      },
-      child: const Icon(Icons.arrow_forward),
-    ), */
+      child: const Icon(Icons.add),
+    ),
   );
 }
 
@@ -178,7 +156,7 @@ class ProductoFormPage extends StatefulWidget {
 
 class _ProductoFormPageState extends State<ProductoFormPage> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _n, _p, _c;
+  late TextEditingController _n, _p, _c,_img;
   String? _categoriaSeleccionada;
 
   @override
@@ -188,6 +166,8 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
     _p = TextEditingController(text: widget.producto?.precio.toString() ?? '');
     _c = TextEditingController(
       text: widget.producto?.cantidad.toString() ?? '',
+     _img = TextEditingController(
+      text: widget.producto?.imagenUrl  ?? '',
     );
     _categoriaSeleccionada =
         widget.producto?.categoria ?? Producto.categoriasDisponibles.first;
@@ -198,34 +178,22 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
     _n.dispose();
     _p.dispose();
     _c.dispose();
+    _img.dispose();
     super.dispose();
   }
 
-  // para crear botón de cancelar y poder resetear los campos al pulsar boton cancelar al crear el producto
-  void _clearTextFields() {
-    _n.clear();
-    _p.clear();
-    _c.clear();
-    // como eliminaria la categoria seleccionada si es un string??
-    // Si usas un Form, puedes resetearlo también:
-    _formKey.currentState?.reset();
-  }
-
   Future<void> _save() async {
-    // print('>>> _categoriaSeleccionada en _save(): $_categoriaSeleccionada');
     if (!_formKey.currentState!.validate()) return;
     final prod = Producto(
       id: widget.producto?.id ?? '',
       nombre: _n.text.trim(),
       precio: double.parse(_p.text),
       cantidad: int.parse(_c.text),
-      categoria:
-          (_categoriaSeleccionada == null ||
-              _categoriaSeleccionada!.trim().isEmpty)
+      categoria: (_categoriaSeleccionada == null || _categoriaSeleccionada!.trim().isEmpty)
           ? 'Otros'
           : _categoriaSeleccionada!.trim(),
     );
-    // print("categoria para el producto final ${prod.categoria}");
+
     if (widget.producto == null) {
       productoService.addProducto(prod);
     } else {
@@ -233,6 +201,10 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
     }
     await productoService.guardarProductos();
     if (mounted) Navigator.pop(context, true);
+  }
+
+  void _cancel() {
+    Navigator.pop(context, false);
   }
 
   @override
@@ -251,12 +223,6 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
                 decoration: const InputDecoration(
                   labelText: 'Nombre',
                   border: OutlineInputBorder(),
-                  errorStyle: TextStyle(
-                    color: Colors
-                        .redAccent, // rojo oscuro (puedes usar otro Color)
-                    fontSize: 14, // tamaño más grande para el error
-                    fontWeight: FontWeight.bold,
-                  ),
                 ),
                 validator: (v) =>
                     v!.trim().isEmpty ? 'Campo Obligatorio' : null,
@@ -267,16 +233,8 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
                 decoration: const InputDecoration(
                   labelText: 'Precio',
                   border: OutlineInputBorder(),
-                  errorStyle: TextStyle(
-                    color: Colors
-                        .redAccent, // rojo oscuro (puedes usar otro Color)
-                    fontSize: 14, // tamaño más grande para el error
-                    fontWeight: FontWeight.bold,
-                  ),
                 ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 validator: (v) =>
                     double.tryParse(v!) == null || double.parse(v) <= 0
                     ? 'Dato Inválido'
@@ -288,12 +246,6 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
                 decoration: const InputDecoration(
                   labelText: 'Cantidad',
                   border: OutlineInputBorder(),
-                  errorStyle: TextStyle(
-                    color: Colors
-                        .redAccent, // rojo oscuro (puedes usar otro Color)
-                    fontSize: 14, // tamaño más grande para el error
-                    fontWeight: FontWeight.bold,
-                  ),
                 ),
                 keyboardType: TextInputType.number,
                 validator: (v) => int.tryParse(v!) == null || int.parse(v) < 0
@@ -316,71 +268,22 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
                     _categoriaSeleccionada = valor;
                   });
                 },
-                validator: (val) => val == null || val.isEmpty
-                    ? 'Seleccione una categoría'
-                    : null,
+                validator: (val) =>
+                    val == null || val.isEmpty ? 'Seleccione una categoría' : null,
               ),
               const SizedBox(height: 20),
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    top: 24.0,
-                  ), // espacio arriba para separarlo más abajo
-                  child: SizedBox(
-                    width: 220, // más ancho
-                    height: 55, // más alto (botón más grande)
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        ElevatedButton(
-                          onPressed: _save,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors
-                                .blue
-                                .shade800, // fondo oscuro azul (puedes cambiar)
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                12,
-                              ), // bordes redondeados
-                            ),
-                          ),
-                          child: Text(
-                            edit ? 'Guardar' : 'Crear',
-                            style: const TextStyle(
-                              fontSize: 20, // texto más grande
-                              fontWeight: FontWeight.bold,
-                              color: Colors
-                                  .white, // texto blanco para buen contraste
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 20),
-                        ElevatedButton(
-                          onPressed: _clearTextFields,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors
-                                .blue
-                                .shade800, // fondo oscuro azul (puedes cambiar)
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                12,
-                              ), // bordes redondeados
-                            ),
-                          ),
-                          child: Text(
-                            'Cancelar',
-                            style: const TextStyle(
-                              fontSize: 20, // texto más grande
-                              fontWeight: FontWeight.bold,
-                              color: Colors
-                                  .white, // texto blanco para buen contraste
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: _save,
+                    child: Text(edit ? 'Guardar' : 'Crear'),
                   ),
-                ),
+                  ElevatedButton(
+                    onPressed: _cancel,
+                    child: const Text('Cancelar'),
+                  ),
+                ],
               ),
             ],
           ),
@@ -406,10 +309,7 @@ class InventarioPage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: ListView(
           children: [
-            const Text(
-              'Productos únicos:',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+            const Text('Productos únicos:', style: TextStyle(fontWeight: FontWeight.bold)),
             if (uniques.isEmpty)
               const Text('Ninguno')
             else
@@ -420,29 +320,20 @@ class InventarioPage extends StatelessWidget {
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Por categoría:',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+            const Text('Por categoría:', style: TextStyle(fontWeight: FontWeight.bold)),
             if (byCat.isEmpty)
               const Text('Nada')
             else
               ...byCat.entries.expand(
                 (e) => [
-                  Text(
-                    e.key,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
+                  Text(e.key, style: const TextStyle(fontWeight: FontWeight.bold)),
                   ...e.value.map(
                     (p) => Text('  • ${p.nombre} (Cant: ${p.cantidad})'),
                   ),
                 ],
               ),
             const SizedBox(height: 16),
-            const Text(
-              'Stock bajo (<10):',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+            const Text('Stock bajo (<10):', style: TextStyle(fontWeight: FontWeight.bold)),
             if (low.isEmpty)
               const Text('Nada')
             else

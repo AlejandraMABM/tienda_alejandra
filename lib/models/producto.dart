@@ -4,6 +4,7 @@ class Producto {
   final double precio;
   final int cantidad;
   final String categoria;
+  final String? imagenUrl; // aqui insertamos la url que viene de la web
 
   Producto({
     this.id = '',
@@ -11,6 +12,7 @@ class Producto {
     required this.precio,
     required this.cantidad,
     required this.categoria,
+    required this.imagenUrl,
   });
  
 
@@ -25,6 +27,7 @@ class Producto {
           ? int.parse(map['cantidad'])
           : (map['cantidad'] ?? 0),
       categoria: map['categoria'] ?? '',
+      imagenUrl: map['imagenUrl'] ?? '',
     );
   }
 
@@ -35,6 +38,8 @@ class Producto {
       'precio': precio.toString(),
       'cantidad': cantidad.toString(),
       'categoria': categoria.toString(),
+      'imagenUrl': imagenUrl,
+
     };
   }
 
