@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:tienda_alejandra/menu_principal.dart';
 // import 'package:tienda_alejandra/pages/categorias.dart';
 import 'models/producto.dart';
 import 'services/producto_service.dart';
@@ -147,9 +148,23 @@ class _ProductoListPageState extends State<ProductoListPage> {
               );
             },
           ),
-    floatingActionButton: FloatingActionButton(
+
+    /* floatingActionButton: FloatingActionButton(
       onPressed: () => _openForm(),
-      child: const Icon(Icons.add),
+      child: const Icon(Icons.add), 
+      
+      
+    ), */
+
+    // prueba colocar el menu principal
+    floatingActionButton: FloatingActionButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => MenuPrincipal()),
+        );
+      },
+      child: const Icon(Icons.arrow_forward),
     ),
   );
 }
@@ -243,7 +258,8 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                validator: (v) => v!.trim().isEmpty ? 'Campo Obligatorio' : null,
+                validator: (v) =>
+                    v!.trim().isEmpty ? 'Campo Obligatorio' : null,
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -306,55 +322,66 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
               ),
               const SizedBox(height: 20),
               Center(
-  child: Padding(
-    padding: const EdgeInsets.only(top: 24.0), // espacio arriba para separarlo más abajo
-    child: SizedBox(
-      width: 220,   // más ancho
-      height: 55,   // más alto (botón más grande)
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          
-
-
-          ElevatedButton(
-            onPressed: _save,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue.shade800, // fondo oscuro azul (puedes cambiar)
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12), // bordes redondeados
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    top: 24.0,
+                  ), // espacio arriba para separarlo más abajo
+                  child: SizedBox(
+                    width: 220, // más ancho
+                    height: 55, // más alto (botón más grande)
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ElevatedButton(
+                          onPressed: _save,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors
+                                .blue
+                                .shade800, // fondo oscuro azul (puedes cambiar)
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                12,
+                              ), // bordes redondeados
+                            ),
+                          ),
+                          child: Text(
+                            edit ? 'Guardar' : 'Crear',
+                            style: const TextStyle(
+                              fontSize: 20, // texto más grande
+                              fontWeight: FontWeight.bold,
+                              color: Colors
+                                  .white, // texto blanco para buen contraste
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 20),
+                        ElevatedButton(
+                          onPressed: _clearTextFields,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors
+                                .blue
+                                .shade800, // fondo oscuro azul (puedes cambiar)
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                12,
+                              ), // bordes redondeados
+                            ),
+                          ),
+                          child: Text(
+                            'Cancelar',
+                            style: const TextStyle(
+                              fontSize: 20, // texto más grande
+                              fontWeight: FontWeight.bold,
+                              color: Colors
+                                  .white, // texto blanco para buen contraste
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-            ),
-            child: Text(
-              edit ? 'Guardar' : 'Crear',
-              style: const TextStyle(
-                fontSize: 20,             // texto más grande
-                fontWeight: FontWeight.bold,
-                color: Colors.white,      // texto blanco para buen contraste
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: _clearTextFields,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue.shade800, // fondo oscuro azul (puedes cambiar)
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12), // bordes redondeados
-              ),
-            ), child: Text('Cancelar',
-            style: const TextStyle(
-                fontSize: 20,             // texto más grande
-                fontWeight: FontWeight.bold,
-                color: Colors.white,      // texto blanco para buen contraste
-              ),
-            
-            ), ),
-
-        ],
-      ),
-    ),
-  ),
-),
             ],
           ),
         ),
