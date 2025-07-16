@@ -12,6 +12,7 @@ class Producto {
     required this.cantidad,
     required this.categoria,
   });
+ 
 
   factory Producto.fromMap(Map<String, dynamic> map) {
     return Producto(
@@ -33,7 +34,7 @@ class Producto {
       'nombre': nombre,
       'precio': precio.toString(),
       'cantidad': cantidad.toString(),
-      'categoria': categoria,
+      'categoria': categoria.toString(),
     };
   }
 

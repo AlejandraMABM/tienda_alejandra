@@ -16,7 +16,7 @@ class CsvManager {
     if (txt.trim().isEmpty) return [];
     final rows = const CsvToListConverter(eol: '\n').convert(txt);
     if (rows.length < 2) return [];
-    final headers = rows.first.map((e) => e.toString()).toList();
+    final headers = rows.first.map((e) => e.toString().trim()).toList();
     return rows.skip(1).map((row) {
       final map = <String, dynamic>{};
       for (int i = 0; i < headers.length; i++) {

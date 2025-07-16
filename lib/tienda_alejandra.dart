@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+// import 'package:tienda_alejandra/pages/categorias.dart';
 import 'models/producto.dart';
 import 'services/producto_service.dart';
 
@@ -55,11 +56,34 @@ class _ProductoListPageState extends State<ProductoListPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Confirmar'),
-        content: Text('Eliminar "${p.nombre}"?'),
+        title: const Text(
+          'Confirmar',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+        ),
+        //  content: Text('Eliminar "${p.nombre}"?'),
+        content: Text.rich(
+          TextSpan(
+            text: 'Eliminar ',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.black,
+            ), // estilo base del texto
+            children: [
+              TextSpan(
+                text: '"${p.nombre}"',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ), // solo esto en negrita
+              ),
+              TextSpan(text: '?'),
+            ],
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
+
             child: const Text('No'),
           ),
           ElevatedButton(
@@ -92,7 +116,12 @@ class _ProductoListPageState extends State<ProductoListPage> {
       ],
     ),
     body: productos.isEmpty
-        ? const Center(child: Text('No hay productos'))
+        ? const Center(
+            child: Text(
+              'No hay productos',
+              style: TextStyle(fontSize: 20, color: Colors.deepPurple),
+            ),
+          )
         : ListView.builder(
             itemCount: productos.length,
             itemBuilder: (_, i) {
@@ -145,7 +174,8 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
     _c = TextEditingController(
       text: widget.producto?.cantidad.toString() ?? '',
     );
-    _categoriaSeleccionada = widget.producto?.categoria;
+    _categoriaSeleccionada =
+        widget.producto?.categoria ?? Producto.categoriasDisponibles.first;
   }
 
   @override
@@ -157,14 +187,20 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
   }
 
   Future<void> _save() async {
+    // print('>>> _categoriaSeleccionada en _save(): $_categoriaSeleccionada');
     if (!_formKey.currentState!.validate()) return;
     final prod = Producto(
       id: widget.producto?.id ?? '',
       nombre: _n.text.trim(),
       precio: double.parse(_p.text),
       cantidad: int.parse(_c.text),
-      categoria: _categoriaSeleccionada!.trim(),
+      categoria:
+          (_categoriaSeleccionada == null ||
+              _categoriaSeleccionada!.trim().isEmpty)
+          ? 'Otros'
+          : _categoriaSeleccionada!.trim(),
     );
+    // print("categoria para el producto final ${prod.categoria}");
     if (widget.producto == null) {
       productoService.addProducto(prod);
     } else {
@@ -190,8 +226,14 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
                 decoration: const InputDecoration(
                   labelText: 'Nombre',
                   border: OutlineInputBorder(),
+                  errorStyle: TextStyle(
+                    color: Colors
+                        .redAccent, // rojo oscuro (puedes usar otro Color)
+                    fontSize: 14, // tamaño más grande para el error
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                validator: (v) => v!.trim().isEmpty ? 'Requerido' : null,
+                validator: (v) => v!.trim().isEmpty ? 'Campo Obligatorio' : null,
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -199,12 +241,20 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
                 decoration: const InputDecoration(
                   labelText: 'Precio',
                   border: OutlineInputBorder(),
+                  errorStyle: TextStyle(
+                    color: Colors
+                        .redAccent, // rojo oscuro (puedes usar otro Color)
+                    fontSize: 14, // tamaño más grande para el error
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 validator: (v) =>
                     double.tryParse(v!) == null || double.parse(v) <= 0
-                        ? 'Inválido'
-                        : null,
+                    ? 'Dato Inválido'
+                    : null,
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -212,15 +262,21 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
                 decoration: const InputDecoration(
                   labelText: 'Cantidad',
                   border: OutlineInputBorder(),
+                  errorStyle: TextStyle(
+                    color: Colors
+                        .redAccent, // rojo oscuro (puedes usar otro Color)
+                    fontSize: 14, // tamaño más grande para el error
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 keyboardType: TextInputType.number,
-                validator: (v) =>
-                    int.tryParse(v!) == null || int.parse(v) < 0
-                        ? 'Inválido'
-                        : null,
+                validator: (v) => int.tryParse(v!) == null || int.parse(v) < 0
+                    ? 'Dato Inválido'
+                    : null,
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
+                autovalidateMode: AutovalidateMode.onUserInteraction,
                 value: _categoriaSeleccionada,
                 decoration: const InputDecoration(
                   labelText: 'Categoría',
@@ -234,19 +290,37 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
                     _categoriaSeleccionada = valor;
                   });
                 },
-                validator: (val) =>
-                    val == null || val.isEmpty ? 'Seleccione una categoría' : null,
+                validator: (val) => val == null || val.isEmpty
+                    ? 'Seleccione una categoría'
+                    : null,
               ),
               const SizedBox(height: 20),
               Center(
-                child: SizedBox(
-                  width: 180,
-                  child: ElevatedButton(
-                    onPressed: _save,
-                    child: Text(edit ? 'Guardar' : 'Crear'),
-                  ),
-                ),
-              ),
+  child: Padding(
+    padding: const EdgeInsets.only(top: 24.0), // espacio arriba para separarlo más abajo
+    child: SizedBox(
+      width: 220,   // más ancho
+      height: 55,   // más alto (botón más grande)
+      child: ElevatedButton(
+        onPressed: _save,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blue.shade800, // fondo oscuro azul (puedes cambiar)
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12), // bordes redondeados
+          ),
+        ),
+        child: Text(
+          edit ? 'Guardar' : 'Crear',
+          style: const TextStyle(
+            fontSize: 20,             // texto más grande
+            fontWeight: FontWeight.bold,
+            color: Colors.white,      // texto blanco para buen contraste
+          ),
+        ),
+      ),
+    ),
+  ),
+),
             ],
           ),
         ),
