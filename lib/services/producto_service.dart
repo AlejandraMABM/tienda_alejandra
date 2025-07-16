@@ -22,8 +22,7 @@ class ProductoService {
   }
 
   void addProducto(Producto p) {
-   //    print("valor de p: ${p.categoria}");
-       
+   //    print("valor de p: ${p.categoria}")  
     if (p.id.isEmpty) p.id = _uuid.v4();
     _prods.add(p);
   }

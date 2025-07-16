@@ -120,6 +120,15 @@ class _ProductoListPageState extends State<ProductoListPage> {
             itemBuilder: (_, i) {
               final p = productos[i];
               return ListTile(
+                leading: (p.imagenUrl != null && p.imagenUrl!.isNotEmpty)
+                    ? Image.network(
+                        p.imagenUrl!,
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+                      )
+                    : const Icon(Icons.image_not_supported, size: 40),
                 title: Text(p.nombre),
                 subtitle: Text(
                   'Precio: \$${p.precio.toStringAsFixed(2)} • Cant.: ${p.cantidad} • Cat: ${p.categoria}',
@@ -156,7 +165,7 @@ class ProductoFormPage extends StatefulWidget {
 
 class _ProductoFormPageState extends State<ProductoFormPage> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _n, _p, _c,_img;
+  late TextEditingController _n, _p, _c, _img;
   String? _categoriaSeleccionada;
 
   @override
@@ -164,11 +173,8 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
     super.initState();
     _n = TextEditingController(text: widget.producto?.nombre ?? '');
     _p = TextEditingController(text: widget.producto?.precio.toString() ?? '');
-    _c = TextEditingController(
-      text: widget.producto?.cantidad.toString() ?? '',
-     _img = TextEditingController(
-      text: widget.producto?.imagenUrl  ?? '',
-    );
+    _c = TextEditingController(text: widget.producto?.cantidad.toString() ?? '');
+    _img = TextEditingController(text: widget.producto?.imagenUrl ?? '');
     _categoriaSeleccionada =
         widget.producto?.categoria ?? Producto.categoriasDisponibles.first;
   }
@@ -192,6 +198,7 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
       categoria: (_categoriaSeleccionada == null || _categoriaSeleccionada!.trim().isEmpty)
           ? 'Otros'
           : _categoriaSeleccionada!.trim(),
+      imagenUrl: _img.text.trim(),
     );
 
     if (widget.producto == null) {
@@ -270,6 +277,14 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
                 },
                 validator: (val) =>
                     val == null || val.isEmpty ? 'Seleccione una categoría' : null,
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _img,
+                decoration: const InputDecoration(
+                  labelText: 'URL de Imagen',
+                  border: OutlineInputBorder(),
+                ),
               ),
               const SizedBox(height: 20),
               Row(
