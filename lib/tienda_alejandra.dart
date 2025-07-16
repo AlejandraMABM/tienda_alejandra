@@ -149,15 +149,15 @@ class _ProductoListPageState extends State<ProductoListPage> {
             },
           ),
 
-    /* floatingActionButton: FloatingActionButton(
+    floatingActionButton: FloatingActionButton(
       onPressed: () => _openForm(),
       child: const Icon(Icons.add), 
       
       
-    ), */
+    ), 
 
     // prueba colocar el menu principal
-    floatingActionButton: FloatingActionButton(
+    /*floatingActionButton: FloatingActionButton(
       onPressed: () {
         Navigator.push(
           context,
@@ -165,7 +165,7 @@ class _ProductoListPageState extends State<ProductoListPage> {
         );
       },
       child: const Icon(Icons.arrow_forward),
-    ),
+    ), */
   );
 }
 
