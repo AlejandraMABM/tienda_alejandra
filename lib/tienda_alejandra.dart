@@ -109,12 +109,14 @@ class _ProductoListPageState extends State<ProductoListPage> {
                     leading: (p.imagenUrl != null && p.imagenUrl!.isNotEmpty)
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(6),
-                            child: Image.network(
-                              p.imagenUrl!,
+                            child: SizedBox(
                               width: 100,
                               height: 100,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 60),
+                              child: Image.network(
+                                p.imagenUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 60),
+                              ),
                             ),
                           )
                         : const Icon(Icons.image_not_supported, size: 60),
@@ -189,6 +191,7 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
       categoria: _categoriaSeleccionada,
       imagenUrl: _img.text.trim().isEmpty ? null : _img.text.trim(),
     );
+    print("guarddanto todo el registro ${Producto}");
     if (widget.producto == null) {
       productoService.addProducto(nuevo);
     } else {
@@ -256,23 +259,24 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
                 },
               ),
               const SizedBox(height: 20),
-              if (_img.text.trim().isNotEmpty)
-                Container(
-                  height: 300,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade400),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      _img.text.trim(),
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 100),
-                    ),
-                  ),
+              Container(
+                height: 300,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade400),
+                  borderRadius: BorderRadius.circular(12),
                 ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: (_img.text.trim().isEmpty)
+                      ? const Icon(Icons.image_not_supported, size: 100)
+                      : Image.network(
+                          _img.text.trim(),
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 100),
+                        ),
+                ),
+              ),
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -288,5 +292,6 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
     );
   }
 }
+
 
 
