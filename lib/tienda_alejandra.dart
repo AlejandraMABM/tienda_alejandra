@@ -14,7 +14,7 @@ Future<void> main() async {
   print('productos antes de cargados $productoService');
   productoService.initWithPath(path);
   await productoService.cargarProductos();
-    print('productos cargados $productoService');
+  print('productos cargados $productoService');
 
   runApp(const MyApp());
 }
@@ -117,12 +117,11 @@ class _ProductoListPageState extends State<ProductoListPage> {
                               child: Image.network(
                                 p.imagenUrl!,
                                 fit: BoxFit.cover,
-                                
                                 errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 60),
                               ),
                             ),
                           )
-                        : const Icon(Icons.image_not_supported, size: 60), // esta funcion indica ausencia de url o vacío
+                        : const Icon(Icons.image_not_supported, size: 60),
                     title: Text(p.nombre, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     subtitle: Text('${p.categoria} - \$${p.precio.toStringAsFixed(2)} (x${p.cantidad})'),
                     trailing: Row(
@@ -194,7 +193,7 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
       categoria: _categoriaSeleccionada,
       imagenUrl: _img.text.trim().isEmpty ? null : _img.text.trim(),
     );
-    print("guarddanto todo el registro ${Producto}");
+    print("guardando producto: $nuevo");
     if (widget.producto == null) {
       productoService.addProducto(nuevo);
     } else {
@@ -206,6 +205,16 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
 
   void _cancelar() {
     Navigator.pop(context, false);
+  }
+
+  void _borrarCampos() {
+    setState(() {
+      _n.clear();
+      _p.clear();
+      _c.clear();
+      _img.clear();
+      _categoriaSeleccionada = Producto.categoriasDisponibles.first;
+    });
   }
 
   @override
@@ -286,6 +295,11 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
                 children: [
                   ElevatedButton(onPressed: _guardar, child: const Text('Guardar')),
                   ElevatedButton(onPressed: _cancelar, child: const Text('Cancelar')),
+                  ElevatedButton(
+                    onPressed: _borrarCampos,
+                    //style: ElevatedButton.styleFrom(backgroundColor: const Color.fromARGB(255, 234, 229, 229)),
+                    child: const Text('Borrar Campos'),
+                  ),
                 ],
               ),
             ],
@@ -295,6 +309,7 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
     );
   }
 }
+
 
 
 
