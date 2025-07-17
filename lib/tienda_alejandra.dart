@@ -11,8 +11,10 @@ Future<void> main() async {
   final dir = await getApplicationDocumentsDirectory();
   final path = '${dir.path}/productos.csv';
   productoService = ProductoService();
+  print('productos antes de cargados $productoService');
   productoService.initWithPath(path);
   await productoService.cargarProductos();
+    print('productos cargados $productoService');
 
   runApp(const MyApp());
 }
@@ -115,11 +117,12 @@ class _ProductoListPageState extends State<ProductoListPage> {
                               child: Image.network(
                                 p.imagenUrl!,
                                 fit: BoxFit.cover,
+                                
                                 errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 60),
                               ),
                             ),
                           )
-                        : const Icon(Icons.image_not_supported, size: 60),
+                        : const Icon(Icons.image_not_supported, size: 60), // esta funcion indica ausencia de url o vacío
                     title: Text(p.nombre, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     subtitle: Text('${p.categoria} - \$${p.precio.toStringAsFixed(2)} (x${p.cantidad})'),
                     trailing: Row(
