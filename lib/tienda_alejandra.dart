@@ -1,31 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:tienda_alejandra/menu_principal.dart';
+import 'dart:io';
 import 'models/producto.dart';
 import 'services/producto_service.dart';
 
-final productoService = ProductoService();
+late ProductoService productoService;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final dir = await getApplicationDocumentsDirectory();
-  productoService.initWithPath('${dir.path}/productos.csv');
+  final path = '${dir.path}/productos.csv';
+  productoService = ProductoService();
+  productoService.initWithPath(path);
   await productoService.cargarProductos();
+
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
   @override
-  Widget build(context) => MaterialApp(
-        title: 'Gestión Productos',
-        theme: ThemeData(primarySwatch: Colors.blue),
-        home: const ProductoListPage(),
-      );
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Gestor de Productos',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        useMaterial3: true,
+      ),
+      home: const ProductoListPage(),
+    );
+  }
 }
 
 class ProductoListPage extends StatefulWidget {
   const ProductoListPage({super.key});
+
   @override
   State<ProductoListPage> createState() => _ProductoListPageState();
 }
@@ -78,45 +88,38 @@ class _ProductoListPageState extends State<ProductoListPage> {
   }
 
   @override
-  Widget build(context) => Scaffold(
-        appBar: AppBar(
-          title: const Text('Productos de Colección'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.analytics),
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const InventarioPage()),
-              ),
-            ),
-            IconButton(icon: const Icon(Icons.refresh), onPressed: _refresh),
-          ],
-        ),
-        body: productos.isEmpty
-            ? const Center(
-                child: Text('No hay productos'),
-              )
-            : ListView.builder(
-                itemCount: productos.length,
-                itemBuilder: (_, i) {
-                  final p = productos[i];
-                  return ListTile(
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Productos'),
+        actions: [
+          IconButton(icon: const Icon(Icons.refresh), onPressed: _refresh),
+        ],
+      ),
+      body: productos.isEmpty
+          ? const Center(child: Text('No hay productos'))
+          : ListView.builder(
+              itemCount: productos.length,
+              itemBuilder: (context, index) {
+                final p = productos[index];
+                return Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(12),
                     leading: (p.imagenUrl != null && p.imagenUrl!.isNotEmpty)
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(6),
                             child: Image.network(
                               p.imagenUrl!,
-                              width: 60,
-                              height: 60,
+                              width: 100,
+                              height: 100,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+                              errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 60),
                             ),
                           )
-                        : const Icon(Icons.image_not_supported, size: 40),
-                    title: Text(p.nombre),
-                    subtitle: Text(
-                      'Precio: \$${p.precio.toStringAsFixed(2)} • Cant.: ${p.cantidad} • Cat: ${p.categoria}',
-                    ),
+                        : const Icon(Icons.image_not_supported, size: 60),
+                    title: Text(p.nombre, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    subtitle: Text('${p.categoria} - \$${p.precio.toStringAsFixed(2)} (x${p.cantidad})'),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -127,30 +130,32 @@ class _ProductoListPageState extends State<ProductoListPage> {
                         IconButton(
                           icon: const Icon(Icons.delete),
                           onPressed: () => _confirmDelete(p),
-                        ),
+                        )
                       ],
                     ),
-                  );
-                },
-              ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => _openForm(),
-          child: const Icon(Icons.add),
-        ),
-      );
+                  ),
+                );
+              },
+            ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _openForm(),
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
 }
 
 class ProductoFormPage extends StatefulWidget {
   final Producto? producto;
   const ProductoFormPage({super.key, this.producto});
+
   @override
   State<ProductoFormPage> createState() => _ProductoFormPageState();
 }
 
 class _ProductoFormPageState extends State<ProductoFormPage> {
-  final _formKey = GlobalKey<FormState>();
   late TextEditingController _n, _p, _c, _img;
-  String? _categoriaSeleccionada;
+  late String _categoriaSeleccionada;
 
   @override
   void initState() {
@@ -159,8 +164,8 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
     _p = TextEditingController(text: widget.producto?.precio.toString() ?? '');
     _c = TextEditingController(text: widget.producto?.cantidad.toString() ?? '');
     _img = TextEditingController(text: widget.producto?.imagenUrl ?? '');
-    _categoriaSeleccionada =
-        widget.producto?.categoria ?? Producto.categoriasDisponibles.first;
+    _img.addListener(() => setState(() {}));
+    _categoriaSeleccionada = widget.producto?.categoria ?? Producto.categoriasDisponibles.first;
   }
 
   @override
@@ -172,102 +177,74 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
     super.dispose();
   }
 
-  Future<void> _save() async {
-    if (!_formKey.currentState!.validate()) return;
-    final imagen = _img.text.trim();
-    final prod = Producto(
-      id: widget.producto?.id ?? '',
-      nombre: _n.text.trim(),
-      precio: double.parse(_p.text),
-      cantidad: int.parse(_c.text),
-      categoria: (_categoriaSeleccionada == null || _categoriaSeleccionada!.trim().isEmpty)
-          ? 'Otros'
-          : _categoriaSeleccionada!.trim(),
-      imagenUrl: imagen.isEmpty ? null : imagen,
-    );
+  final _formKey = GlobalKey<FormState>();
 
+  void _guardar() async {
+    if (!_formKey.currentState!.validate()) return;
+    final nuevo = Producto(
+      id: widget.producto?.id ?? UniqueKey().toString(),
+      nombre: _n.text.trim(),
+      precio: double.parse(_p.text.trim()),
+      cantidad: int.parse(_c.text.trim()),
+      categoria: _categoriaSeleccionada,
+      imagenUrl: _img.text.trim().isEmpty ? null : _img.text.trim(),
+    );
     if (widget.producto == null) {
-      productoService.addProducto(prod);
+      productoService.addProducto(nuevo);
     } else {
-      productoService.updateProducto(prod);
+      productoService.updateProducto(nuevo);
     }
     await productoService.guardarProductos();
     if (mounted) Navigator.pop(context, true);
   }
 
-  void _cancel() {
+  void _cancelar() {
     Navigator.pop(context, false);
   }
 
   @override
-  Widget build(context) {
+  Widget build(BuildContext context) {
     final edit = widget.producto != null;
     return Scaffold(
       appBar: AppBar(title: Text(edit ? 'Editar Producto' : 'Nuevo Producto')),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: ListView(
             children: [
               TextFormField(
                 controller: _n,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (v) => v!.trim().isEmpty ? 'Campo Obligatorio' : null,
+                decoration: const InputDecoration(labelText: 'Nombre'),
+                validator: (v) => v!.trim().isEmpty ? 'Requerido' : null,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               TextFormField(
                 controller: _p,
-                decoration: const InputDecoration(
-                  labelText: 'Precio',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                validator: (v) =>
-                    double.tryParse(v!) == null || double.parse(v) <= 0
-                        ? 'Dato Inválido'
-                        : null,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: 'Precio'),
+                validator: (v) => double.tryParse(v!.trim()) == null ? 'Número inválido' : null,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               TextFormField(
                 controller: _c,
-                decoration: const InputDecoration(
-                  labelText: 'Cantidad',
-                  border: OutlineInputBorder(),
-                ),
                 keyboardType: TextInputType.number,
-                validator: (v) => int.tryParse(v!) == null || int.parse(v) < 0
-                    ? 'Dato Inválido'
-                    : null,
+                decoration: const InputDecoration(labelText: 'Cantidad'),
+                validator: (v) => int.tryParse(v!.trim()) == null ? 'Número inválido' : null,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 value: _categoriaSeleccionada,
-                decoration: const InputDecoration(
-                  labelText: 'Categoría',
-                  border: OutlineInputBorder(),
-                ),
-                items: Producto.categoriasDisponibles.map((cat) {
-                  return DropdownMenuItem(value: cat, child: Text(cat));
-                }).toList(),
-                onChanged: (valor) {
-                  setState(() {
-                    _categoriaSeleccionada = valor;
-                  });
-                },
-                validator: (val) =>
-                    val == null || val.isEmpty ? 'Seleccione una categoría' : null,
+                items: Producto.categoriasDisponibles
+                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                    .toList(),
+                onChanged: (v) => setState(() => _categoriaSeleccionada = v!),
+                decoration: const InputDecoration(labelText: 'Categoría'),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               TextFormField(
                 controller: _img,
-                decoration: const InputDecoration(
-                  labelText: 'URL de Imagen',
-                  border: OutlineInputBorder(),
-                ),
+                decoration: const InputDecoration(labelText: 'URL de Imagen'),
                 validator: (v) {
                   final val = v!.trim();
                   if (val.isEmpty) return null;
@@ -279,17 +256,29 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
                 },
               ),
               const SizedBox(height: 20),
+              if (_img.text.trim().isNotEmpty)
+                Container(
+                  height: 300,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade400),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      _img.text.trim(),
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 100),
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton(
-                    onPressed: _save,
-                    child: Text(edit ? 'Guardar' : 'Crear'),
-                  ),
-                  ElevatedButton(
-                    onPressed: _cancel,
-                    child: const Text('Cancelar'),
-                  ),
+                  ElevatedButton(onPressed: _guardar, child: const Text('Guardar')),
+                  ElevatedButton(onPressed: _cancelar, child: const Text('Cancelar')),
                 ],
               ),
             ],
@@ -300,55 +289,4 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
   }
 }
 
-class InventarioPage extends StatelessWidget {
-  const InventarioPage({super.key});
-
-  @override
-  Widget build(context) {
-    final uniques = productoService.getProductosUnicos();
-    final total = productoService.getValorTotalInventario();
-    final byCat = productoService.getProductosPorCategoria();
-    final low = productoService.getProductosBajoStock(10);
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Informe de Inventario')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: ListView(
-          children: [
-            const Text('Productos únicos:', style: TextStyle(fontWeight: FontWeight.bold)),
-            if (uniques.isEmpty)
-              const Text('Ninguno')
-            else
-              ...uniques.map((p) => Text('• ${p.nombre} (${p.categoria})')),
-            const SizedBox(height: 16),
-            Text(
-              'Valor total del inventario: \$${total.toStringAsFixed(2)}',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            const Text('Por categoría:', style: TextStyle(fontWeight: FontWeight.bold)),
-            if (byCat.isEmpty)
-              const Text('Nada')
-            else
-              ...byCat.entries.expand(
-                (e) => [
-                  Text(e.key, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  ...e.value.map(
-                    (p) => Text('  • ${p.nombre} (Cant: ${p.cantidad})'),
-                  ),
-                ],
-              ),
-            const SizedBox(height: 16),
-            const Text('Stock bajo (<10):', style: TextStyle(fontWeight: FontWeight.bold)),
-            if (low.isEmpty)
-              const Text('Nada')
-            else
-              ...low.map((p) => Text('• ${p.nombre} (Cant: ${p.cantidad})')),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
