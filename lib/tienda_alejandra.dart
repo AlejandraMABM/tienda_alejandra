@@ -3,10 +3,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:tienda_alejandra/menu_principal.dart';
 import 'models/producto.dart';
 import 'services/producto_service.dart';
-import 'package:uuid/uuid.dart';
 
 final productoService = ProductoService();
-final uuid = Uuid();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,7 +36,7 @@ class _ProductoListPageState extends State<ProductoListPage> {
   @override
   void initState() {
     super.initState();
-    _refresh();
+    productos = productoService.getAllProductos();
   }
 
   Future<void> _refresh() async {
@@ -58,24 +56,8 @@ class _ProductoListPageState extends State<ProductoListPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text(
-          'Confirmar',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-        ),
-        content: Text.rich(
-          TextSpan(
-            text: 'Eliminar ',
-            style: TextStyle(fontSize: 16, color: Colors.black),
-            children: [
-              TextSpan(
-                text: '"${p.nombre}"',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              TextSpan(text: '?'),
-            ],
-          ),
-        ),
+        title: const Text('Confirmar'),
+        content: Text('¿Eliminar "${p.nombre}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -112,10 +94,7 @@ class _ProductoListPageState extends State<ProductoListPage> {
         ),
         body: productos.isEmpty
             ? const Center(
-                child: Text(
-                  'No hay productos',
-                  style: TextStyle(fontSize: 20, color: Colors.deepPurple),
-                ),
+                child: Text('No hay productos'),
               )
             : ListView.builder(
                 itemCount: productos.length,
@@ -130,7 +109,7 @@ class _ProductoListPageState extends State<ProductoListPage> {
                               width: 60,
                               height: 60,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, _, _) => const Icon(Icons.broken_image),
+                              errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
                             ),
                           )
                         : const Icon(Icons.image_not_supported, size: 40),
@@ -197,7 +176,7 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
     if (!_formKey.currentState!.validate()) return;
     final imagen = _img.text.trim();
     final prod = Producto(
-      id: widget.producto?.id ?? uuid.v4(),
+      id: widget.producto?.id ?? '',
       nombre: _n.text.trim(),
       precio: double.parse(_p.text),
       cantidad: int.parse(_c.text),
@@ -237,8 +216,7 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
                   labelText: 'Nombre',
                   border: OutlineInputBorder(),
                 ),
-                validator: (v) =>
-                    v!.trim().isEmpty ? 'Campo Obligatorio' : null,
+                validator: (v) => v!.trim().isEmpty ? 'Campo Obligatorio' : null,
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -267,7 +245,6 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                autovalidateMode: AutovalidateMode.onUserInteraction,
                 value: _categoriaSeleccionada,
                 decoration: const InputDecoration(
                   labelText: 'Categoría',
@@ -291,22 +268,16 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
                   labelText: 'URL de Imagen',
                   border: OutlineInputBorder(),
                 ),
-                onChanged: (_) => setState(() {}),
+                validator: (v) {
+                  final val = v!.trim();
+                  if (val.isEmpty) return null;
+                  final uri = Uri.tryParse(val);
+                  if (uri == null || !(uri.isScheme("http") || uri.isScheme("https"))) {
+                    return 'URL inválida';
+                  }
+                  return null;
+                },
               ),
-              const SizedBox(height: 8),
-              if (_img.text.trim().isNotEmpty)
-                Center(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      _img.text.trim(),
-                      width: 120,
-                      height: 120,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => const Icon(Icons.broken_image, size: 80),
-                    ),
-                  ),
-                ),
               const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
