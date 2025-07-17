@@ -3,8 +3,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:tienda_alejandra/menu_principal.dart';
 import 'models/producto.dart';
 import 'services/producto_service.dart';
+import 'package:uuid/uuid.dart';
 
 final productoService = ProductoService();
+final uuid = Uuid();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,10 +20,10 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
   Widget build(context) => MaterialApp(
-    title: 'Gestión Productos',
-    theme: ThemeData(primarySwatch: Colors.blue),
-    home: const ProductoListPage(),
-  );
+        title: 'Gestión Productos',
+        theme: ThemeData(primarySwatch: Colors.blue),
+        home: const ProductoListPage(),
+      );
 }
 
 class ProductoListPage extends StatefulWidget {
@@ -36,7 +38,7 @@ class _ProductoListPageState extends State<ProductoListPage> {
   @override
   void initState() {
     super.initState();
-    productos = productoService.getAllProductos();
+    _refresh();
   }
 
   Future<void> _refresh() async {
@@ -95,65 +97,68 @@ class _ProductoListPageState extends State<ProductoListPage> {
 
   @override
   Widget build(context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('Productos de Colección'),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.analytics),
-          onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const InventarioPage()),
-          ),
-        ),
-        IconButton(icon: const Icon(Icons.refresh), onPressed: _refresh),
-      ],
-    ),
-    body: productos.isEmpty
-        ? const Center(
-            child: Text(
-              'No hay productos',
-              style: TextStyle(fontSize: 20, color: Colors.deepPurple),
+        appBar: AppBar(
+          title: const Text('Productos de Colección'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.analytics),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const InventarioPage()),
+              ),
             ),
-          )
-        : ListView.builder(
-            itemCount: productos.length,
-            itemBuilder: (_, i) {
-              final p = productos[i];
-              return ListTile(
-                leading: (p.imagenUrl != null && p.imagenUrl!.isNotEmpty)
-                    ? Image.network(
-                        p.imagenUrl!,
-                        width: 60,
-                        height: 60,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
-                      )
-                    : const Icon(Icons.image_not_supported, size: 40),
-                title: Text(p.nombre),
-                subtitle: Text(
-                  'Precio: \$${p.precio.toStringAsFixed(2)} • Cant.: ${p.cantidad} • Cat: ${p.categoria}',
+            IconButton(icon: const Icon(Icons.refresh), onPressed: _refresh),
+          ],
+        ),
+        body: productos.isEmpty
+            ? const Center(
+                child: Text(
+                  'No hay productos',
+                  style: TextStyle(fontSize: 20, color: Colors.deepPurple),
                 ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () => _openForm(p),
+              )
+            : ListView.builder(
+                itemCount: productos.length,
+                itemBuilder: (_, i) {
+                  final p = productos[i];
+                  return ListTile(
+                    leading: (p.imagenUrl != null && p.imagenUrl!.isNotEmpty)
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: Image.network(
+                              p.imagenUrl!,
+                              width: 60,
+                              height: 60,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => const Icon(Icons.broken_image),
+                            ),
+                          )
+                        : const Icon(Icons.image_not_supported, size: 40),
+                    title: Text(p.nombre),
+                    subtitle: Text(
+                      'Precio: \$${p.precio.toStringAsFixed(2)} • Cant.: ${p.cantidad} • Cat: ${p.categoria}',
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () => _confirmDelete(p),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          onPressed: () => _openForm(p),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () => _confirmDelete(p),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              );
-            },
-          ),
-    floatingActionButton: FloatingActionButton(
-      onPressed: () => _openForm(),
-      child: const Icon(Icons.add),
-    ),
-  );
+                  );
+                },
+              ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => _openForm(),
+          child: const Icon(Icons.add),
+        ),
+      );
 }
 
 class ProductoFormPage extends StatefulWidget {
@@ -190,15 +195,16 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    final imagen = _img.text.trim();
     final prod = Producto(
-      id: widget.producto?.id ?? '',
+      id: widget.producto?.id ?? uuid.v4(),
       nombre: _n.text.trim(),
       precio: double.parse(_p.text),
       cantidad: int.parse(_c.text),
       categoria: (_categoriaSeleccionada == null || _categoriaSeleccionada!.trim().isEmpty)
           ? 'Otros'
           : _categoriaSeleccionada!.trim(),
-      imagenUrl: _img.text.trim(),
+      imagenUrl: imagen.isEmpty ? null : imagen,
     );
 
     if (widget.producto == null) {
@@ -244,8 +250,8 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 validator: (v) =>
                     double.tryParse(v!) == null || double.parse(v) <= 0
-                    ? 'Dato Inválido'
-                    : null,
+                        ? 'Dato Inválido'
+                        : null,
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -285,7 +291,22 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
                   labelText: 'URL de Imagen',
                   border: OutlineInputBorder(),
                 ),
+                onChanged: (_) => setState(() {}),
               ),
+              const SizedBox(height: 8),
+              if (_img.text.trim().isNotEmpty)
+                Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      _img.text.trim(),
+                      width: 120,
+                      height: 120,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => const Icon(Icons.broken_image, size: 80),
+                    ),
+                  ),
+                ),
               const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -359,3 +380,4 @@ class InventarioPage extends StatelessWidget {
     );
   }
 }
+

@@ -4,7 +4,7 @@ class Producto {
   final double precio;
   final int cantidad;
   final String categoria;
-  final String? imagenUrl; // aqui insertamos la url que viene de la web
+  final String? imagenUrl;
 
   Producto({
     this.id = '',
@@ -14,20 +14,17 @@ class Producto {
     required this.categoria,
     required this.imagenUrl,
   });
- 
 
   factory Producto.fromMap(Map<String, dynamic> map) {
     return Producto(
       id: map['id'] ?? '',
       nombre: map['nombre'] ?? '',
-      precio: (map['precio'] is String)
-          ? double.parse(map['precio'])
-          : (map['precio'] ?? 0.0),
-      cantidad: (map['cantidad'] is String)
-          ? int.parse(map['cantidad'])
-          : (map['cantidad'] ?? 0),
-      categoria: map['categoria'] ?? '',
-      imagenUrl: map['imagenUrl'] ?? '',
+      precio: double.tryParse(map['precio'].toString()) ?? 0.0,
+      cantidad: int.tryParse(map['cantidad'].toString()) ?? 0,
+      categoria: map['categoria'] ?? 'Otros',
+      imagenUrl: (map['imagenUrl']?.toString().trim().isNotEmpty ?? false)
+          ? map['imagenUrl'].toString()
+          : null,
     );
   }
 
@@ -35,11 +32,10 @@ class Producto {
     return {
       'id': id,
       'nombre': nombre,
-      'precio': precio.toString(),
-      'cantidad': cantidad.toString(),
-      'categoria': categoria.toString(),
-      'imagenUrl': imagenUrl,
-
+      'precio': precio,
+      'cantidad': cantidad,
+      'categoria': categoria,
+      'imagenUrl': imagenUrl ?? '',
     };
   }
 
@@ -51,3 +47,4 @@ class Producto {
     'Otros',
   ];
 }
+
