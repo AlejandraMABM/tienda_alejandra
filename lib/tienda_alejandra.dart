@@ -124,7 +124,7 @@ class _ProductoListPageState extends State<ProductoListPage> {
     return Scaffold(
       appBar: AppBar(
          centerTitle: true, 
-        title: const Text('Productos', textAlign: TextAlign.center,),
+        title: const Text('Productos de Colección', textAlign: TextAlign.center,),
         actions: [
           IconButton(icon: const Icon(Icons.refresh), onPressed: _refresh),
           IconButton(
