@@ -123,7 +123,8 @@ class _ProductoListPageState extends State<ProductoListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Productos'),
+         centerTitle: true, 
+        title: const Text('Productos', textAlign: TextAlign.center,),
         actions: [
           IconButton(icon: const Icon(Icons.refresh), onPressed: _refresh),
           IconButton(
