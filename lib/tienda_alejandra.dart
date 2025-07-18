@@ -93,20 +93,31 @@ class _ProductoListPageState extends State<ProductoListPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Notificación'),
-        content: Text('¡Has presionado el botón de notificación!'),
+        title: Text('Notificación', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w900),),
+        content: Text(
+          '!!!!! Aprovecha....Tenemos buenos productos de colección!!!!!!',
+          style: TextStyle(color: const Color.fromARGB(255, 241, 67, 9)),
+          textAlign: TextAlign.center,
+          
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context), // Cierra el diálogo
-            child: Text('Cerrar'),
+            onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(backgroundColor: Colors.blue,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12)
+            )),
+
+            // Cierra el diálogo
+            child: Text(
+              'Cerrar',
+              style: TextStyle(fontWeight: FontWeight.w900, color: Colors.white),
+            ),
           ),
         ],
       ),
     );
-    
   }
-  
-
 
   @override
   Widget build(BuildContext context) {
@@ -128,7 +139,10 @@ class _ProductoListPageState extends State<ProductoListPage> {
               itemBuilder: (context, index) {
                 final p = productos[index];
                 return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   child: ListTile(
                     contentPadding: const EdgeInsets.all(12),
                     leading: (p.imagenUrl != null && p.imagenUrl!.isNotEmpty)
@@ -140,13 +154,22 @@ class _ProductoListPageState extends State<ProductoListPage> {
                               child: Image.network(
                                 p.imagenUrl!,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 60),
+                                errorBuilder: (_, __, ___) =>
+                                    const Icon(Icons.broken_image, size: 60),
                               ),
                             ),
                           )
                         : const Icon(Icons.image_not_supported, size: 60),
-                    title: Text(p.nombre, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    subtitle: Text('${p.categoria} - \$${p.precio.toStringAsFixed(2)} (x${p.cantidad})'),
+                    title: Text(
+                      p.nombre,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    subtitle: Text(
+                      '${p.categoria} - \$${p.precio.toStringAsFixed(2)} (x${p.cantidad})',
+                    ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -157,7 +180,7 @@ class _ProductoListPageState extends State<ProductoListPage> {
                         IconButton(
                           icon: const Icon(Icons.delete),
                           onPressed: () => _confirmDelete(p),
-                        )
+                        ),
                       ],
                     ),
                   ),
@@ -189,10 +212,13 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
     super.initState();
     _n = TextEditingController(text: widget.producto?.nombre ?? '');
     _p = TextEditingController(text: widget.producto?.precio.toString() ?? '');
-    _c = TextEditingController(text: widget.producto?.cantidad.toString() ?? '');
+    _c = TextEditingController(
+      text: widget.producto?.cantidad.toString() ?? '',
+    );
     _img = TextEditingController(text: widget.producto?.imagenUrl ?? '');
     _img.addListener(() => setState(() {}));
-    _categoriaSeleccionada = widget.producto?.categoria ?? Producto.categoriasDisponibles.first;
+    _categoriaSeleccionada =
+        widget.producto?.categoria ?? Producto.categoriasDisponibles.first;
   }
 
   @override
@@ -261,14 +287,17 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
                 controller: _p,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(labelText: 'Precio'),
-                validator: (v) => double.tryParse(v!.trim()) == null ? 'Número inválido' : null,
+                validator: (v) => double.tryParse(v!.trim()) == null
+                    ? 'Número inválido'
+                    : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _c,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(labelText: 'Cantidad'),
-                validator: (v) => int.tryParse(v!.trim()) == null ? 'Número inválido' : null,
+                validator: (v) =>
+                    int.tryParse(v!.trim()) == null ? 'Número inválido' : null,
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
@@ -287,7 +316,8 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
                   final val = v!.trim();
                   if (val.isEmpty) return null;
                   final uri = Uri.tryParse(val);
-                  if (uri == null || !(uri.isScheme("http") || uri.isScheme("https"))) {
+                  if (uri == null ||
+                      !(uri.isScheme("http") || uri.isScheme("https"))) {
                     return 'URL inválida';
                   }
                   return null;
@@ -308,7 +338,8 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
                       : Image.network(
                           _img.text.trim(),
                           fit: BoxFit.contain,
-                          errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 100),
+                          errorBuilder: (_, __, ___) =>
+                              const Icon(Icons.broken_image, size: 100),
                         ),
                 ),
               ),
@@ -316,8 +347,14 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton(onPressed: _guardar, child: const Text('Guardar')),
-                  ElevatedButton(onPressed: _cancelar, child: const Text('Cancelar')),
+                  ElevatedButton(
+                    onPressed: _guardar,
+                    child: const Text('Guardar'),
+                  ),
+                  ElevatedButton(
+                    onPressed: _cancelar,
+                    child: const Text('Cancelar'),
+                  ),
                   ElevatedButton(
                     onPressed: _borrarCampos,
                     //style: ElevatedButton.styleFrom(backgroundColor: const Color.fromARGB(255, 234, 229, 229)),
@@ -332,7 +369,3 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
     );
   }
 }
-
-
-
-
