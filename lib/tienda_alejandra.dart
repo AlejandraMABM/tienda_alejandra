@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:tienda_alejandra/pages/bandera.dart';
 import 'dart:io';
 import 'models/producto.dart';
 import 'services/producto_service.dart';
@@ -93,25 +94,33 @@ class _ProductoListPageState extends State<ProductoListPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Notificación', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w900),),
+        title: Text(
+          'Notificación',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
         content: Text(
           '!!!!! Aprovecha....Tenemos buenos productos de colección!!!!!!',
           style: TextStyle(color: const Color.fromARGB(255, 241, 67, 9)),
           textAlign: TextAlign.center,
-          
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            style: TextButton.styleFrom(backgroundColor: Colors.blue,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12)
-            )),
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.blue,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
 
             // Cierra el diálogo
             child: Text(
               'Cerrar',
-              style: TextStyle(fontWeight: FontWeight.w900, color: Colors.white),
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+              ),
             ),
           ),
         ],
@@ -123,8 +132,11 @@ class _ProductoListPageState extends State<ProductoListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-         centerTitle: true, 
-        title: const Text('Productos de Colección', textAlign: TextAlign.center,),
+        centerTitle: true,
+        title: const Text(
+          'Productos de Colección',
+          textAlign: TextAlign.center,
+        ),
         actions: [
           IconButton(icon: const Icon(Icons.refresh), onPressed: _refresh),
           IconButton(
@@ -133,6 +145,25 @@ class _ProductoListPageState extends State<ProductoListPage> {
           ),
         ],
       ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 0, // Índice del ítem seleccionado
+        onTap: (int index) {
+          if (index == 0) {
+            // Ir a Home
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => Bandera()), // modificar para que vaya a homr
+            );
+          } else if (index == 1) {
+            // Otro destino opcional
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Ajustes'), // modificar para que haga otras cosas
+        ],
+      ),
+
       body: productos.isEmpty
           ? const Center(child: Text('No hay productos'))
           : ListView.builder(
