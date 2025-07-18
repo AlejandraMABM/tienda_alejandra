@@ -89,6 +89,25 @@ class _ProductoListPageState extends State<ProductoListPage> {
     }
   }
 
+  void _accionDelBoton() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Notificación'),
+        content: Text('¡Has presionado el botón de notificación!'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context), // Cierra el diálogo
+            child: Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+    
+  }
+  
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -96,6 +115,10 @@ class _ProductoListPageState extends State<ProductoListPage> {
         title: const Text('Productos'),
         actions: [
           IconButton(icon: const Icon(Icons.refresh), onPressed: _refresh),
+          IconButton(
+            icon: Icon(Icons.notifications),
+            onPressed: _accionDelBoton, // Aquí defines la acción
+          ),
         ],
       ),
       body: productos.isEmpty
